@@ -338,7 +338,7 @@
               <MiscControls></MiscControls>
               <Define>USE_HAL_DRIVER,STM32L051xx</Define>
               <Undefine></Undefine>
-              <IncludePath>../Inc;                             ../Drivers/STM32L0xx_HAL_Driver/Inc;                             ../Drivers/STM32L0xx_HAL_Driver/Inc/Legacy;                             ../Drivers/CMSIS/Device/ST/STM32L0xx/Include;                             ../Drivers/CMSIS/Include;                             ..\bsp</IncludePath>
+              <IncludePath>../Inc;                                   ../Drivers/STM32L0xx_HAL_Driver/Inc;                                   ../Drivers/STM32L0xx_HAL_Driver/Inc/Legacy;                                   ../Drivers/CMSIS/Device/ST/STM32L0xx/Include;                                   ../Drivers/CMSIS/Include;                                   ..\bsp</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -411,6 +411,11 @@
               <FileName>adc.c</FileName>
               <FileType>1</FileType>
               <FilePath>../Src/adc.c</FilePath>
+            </File>
+            <File>
+              <FileName>dma.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../Src/dma.c</FilePath>
             </File>
             <File>
               <FileName>rtc.c</FileName>

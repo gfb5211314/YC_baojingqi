@@ -5,16 +5,7 @@
 
 #define SN_CODE                  "YCBJQ0112345"    //
 //stm32L0xx    PAGE  128BYTE     64*1024/128=512Ò³
-#define PAGE_SIZE                128
-#define PAGE_NUM                 512
-#define ADDR_FLASH_PAGE_505      0X08000000 + 128*504   //
-#define ADDR_FLASH_PAGE_506      0X08000000 + 128*505   //
-#define ADDR_FLASH_PAGE_507      0X08000000 + 128*506   //
-#define ADDR_FLASH_PAGE_508      0X08000000 + 128*507   //
-#define ADDR_FLASH_PAGE_509      0X08000000 + 128*508   //
-#define ADDR_FLASH_PAGE_510      0X08000000 + 128*509   //
-#define ADDR_FLASH_PAGE_511      0X08000000 + 128*510   //
-#define ADDR_FLASH_PAGE_512      0X08000000 + 128*511   //×îºóÒ»Ò³
+
 
 uint8_t sn_code[12];
  //HAL_FLASH_Unlock(void);

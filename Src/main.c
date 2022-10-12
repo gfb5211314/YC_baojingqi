@@ -1,26 +1,10 @@
 /* USER CODE BEGIN Header */
-/**
-  ******************************************************************************
-  * @file           : main.c
-  * @brief          : Main program body
-  ******************************************************************************
-  * @attention
-  *
-  * <h2><center>&copy; Copyright (c) 2020 STMicroelectronics.
-  * All rights reserved.</center></h2>
-  *
-  * This software component is licensed by ST under Ultimate Liberty license
-  * SLA0044, the "License"; You may not use this file except in compliance with
-  * the License. You may obtain a copy of the License at:
-  *                             www.st.com/SLA0044
-  *
-  ******************************************************************************
-  */
 /* USER CODE END Header */
 
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "adc.h"
+#include "dma.h"
 #include "rtc.h"
 #include "spi.h"
 #include "usart.h"
@@ -28,33 +12,59 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "stdio.h"
-#include "main_app.h"
-#include "SX127X_Driver.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
 
-uint32_t  tim_count=0; 
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-
-#define  SOFT_VESION              "System_V1.1_20221009"
-/* USER CODE END PD *
+/* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
+/* USER CODE END PM */
 
+/* Private variables ---------------------------------------------------------*/
+
+/* USER CODE BEGIN PV */
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_NVIC_Init(void);
 /* USER CODE BEGIN PFP */
- void bsp_init_main_key() 
+uint32_t  tim_count=0; 
+extern uint8_t sleep_flag;
+extern uint8_t reset_rang_key;
+void SystemClock_Config(void);
+extern uint8_t password_key;
+uint8_t password_key_value=0;
+extern  uint8_t runing_state_flag;
+uint8_t init_sleep_flag=0;
+
+
+
+  uint8_t dev_init_state=1;
+  uint8_t reset_sleep_flag=0;
+	uint8_t net_suceess_flag=0;
+
+	
+
+
+/* USER CODE END 0 */
+void Test_Dev()
+{
+  Line_1A_WT588S(1);
+	HAL_Delay(500);
+ HAL_GPIO_WritePin(led_en_GPIO_Port,led_en_Pin,GPIO_PIN_RESET);	
+		HAL_Delay(1000);
+	HAL_GPIO_WritePin(led_en_GPIO_Port,led_en_Pin,GPIO_PIN_SET);	
+}
+
+void bsp_init_main_key() 
 {
 	  GPIO_InitTypeDef GPIO_InitStruct = {0};
 		
@@ -88,139 +98,7 @@ void Wake_Up_Io_Config()
      HAL_NVIC_EnableIRQ(EXTI4_15_IRQn);
 	
 }
-/* USER CODE END PM */
 
-/* Private variables ---------------------------------------------------------*/
-
-/* USER CODE BEGIN PV */
-extern uint8_t sleep_flag;
-/* USER CODE END PV */
-
-/* Private function prototypes -----------------------------------------------*/
-void SystemClock_Config(void);
-static void MX_NVIC_Init(void);
-/* USER CODE BEGIN PFP */
-
-/* USER CODE END PM */
-
-/* Private variables ---------------------------------------------------------*/
-
-/* USER CODE BEGIN PV */
-extern uint8_t sleep_flag;
-/* USER CODE END PV */
-
-/* Private function prototypes -----------------------------------------------*/
-void SystemClock_Config(void);
-static void MX_NVIC_Init(void);
-/* USER CODE BEGIN PFP */
-//
-/* USER CODE END PM */
-
-/* Private variables ---------------------------------------------------------*/
-
-/* USER CODE BEGIN PV */
-extern uint8_t sleep_flag;
-/* USER CODE END PV */
-
-/* Private function prototypes -----------------------------------------------*/
-void SystemClock_Config(void);
-static void MX_NVIC_Init(void);
-/* USER CODE BEGIN PFP */
-
-/* USER CODE END PM */
-
-/* Private variables ---------------------------------------------------------*/
-
-/* USER CODE BEGIN PV */
-extern uint8_t sleep_flag;
-extern uint8_t reset_rang_key;
-/* USER CODE END PV */
-
-/* Private function prototypes -----------------------------------------------*/
-void SystemClock_Config(void);
-static void MX_NVIC_Init(void);
-/* USER CODE BEGIN PFP */
-extern uint8_t password_key;
-uint8_t password_key_value=0;
-extern  uint8_t runing_state_flag;
-/* USER CODE END PM */
-
-/* Private variables ---------------------------------------------------------*/
-
-/* USER CODE BEGIN PV */
-extern uint8_t sleep_flag;
-/* USER CODE END PV */
-
-/* Private function prototypes -----------------------------------------------*/
-void SystemClock_Config(void);
-static void MX_NVIC_Init(void);
-/* USER CODE BEGIN PFP */
-
-/* USER CODE END PM */
-
-/* Private variables ---------------------------------------------------------*/
-
-/* USER CODE BEGIN PV */
-extern uint8_t sleep_flag;
-/* USER CODE END PV */
-
-/* Private function prototypes -----------------------------------------------*/
-
-/* USER CODE END PM */
-
-/* Private variables ---------------------------------------------------------*/
-
-/* USER CODE BEGIN PV */
-extern uint8_t sleep_flag;
-/* USER CODE END PV */
-
-/* Private function prototypes -----------------------------------------------*/
-void SystemClock_Config(void);
-static void MX_NVIC_Init(void);
-/* USER CODE BEGIN PFP */
-
-/* USER CODE END PM */
-
-/* Private variables ---------------------------------------------------------*/
-
-/* USER CODE BEGIN PV */
-extern uint8_t sleep_flag;
-/* USER CODE END PV */
-
-/* Private function prototypes -----------------------------------------------*/
-
-
-/* USER CODE END PM */
-
-/* Private variables ---------------------------------------------------------*/
-
-/* USER CODE BEGIN PV */
-
-
-/* USER CODE END PM */
-
-
-
-
-
-
-
-
-
-
-/* Private variables ---------------------------------------------------------*/
-
-/* USER CODE BEGIN PV */
-extern uint8_t sleep_flag;
-uint8_t init_sleep_flag=0;
-/* USER CODE END PV */
-
-
-/* USER CODE END PM */
-
-/* Private variables ---------------------------------------------------------*/
-
-/* USER CODE BEGIN PV */
 void stop_mode_config(void)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        
 {
  GPIO_InitTypeDef GPIO_InitStruct;
@@ -316,10 +194,7 @@ void Sleep_Into()
   HAL_PWR_EnterSTOPMode(PWR_LOWPOWERREGULATOR_ON, PWR_STOPENTRY_WFI);
 	
 }
-/* USER CODE END PFP */
 
-/* Private user code ---------------------------------------------------------*/
-/* USER CODE BEGIN 0 */
 void sleep_init()
 {
     /* USER CODE BEGIN SysInit */
@@ -356,17 +231,6 @@ void sleep_init()
   /* USER CODE BEGIN 2 */
 	app_lora_config_init();
 }
-/* USER CODE END 0 */
-
-/**
-  * @brief  The application entry point.
-  * @retval int
-  */
-
-/* USER CODE END 0 */
-  uint8_t dev_init_state=1;
-  uint8_t reset_sleep_flag=0;
-	uint8_t net_suceess_flag=0;
 void  Reset_Process()
 {
 	  
@@ -385,7 +249,7 @@ void  Reset_Process()
 			       case 1 :
 				           reset_sleep_flag=0;
 			       	net_suceess_flag=factory_parameter_set();
-						 
+					    	 process_usart_data();
 				      if(reset_rang_key==1)
 				      {
 						   HAL_NVIC_SystemReset();
@@ -399,21 +263,12 @@ void  Reset_Process()
 }
 			
 	
-	
+/* USER CODE END PFP */
 
-
+/* Private user code ---------------------------------------------------------*/
+/* USER CODE BEGIN 0 */
 /* USER CODE END 0 */
-void Test_Dev()
-{
-  Line_1A_WT588S(1);
-	HAL_Delay(500);
- HAL_GPIO_WritePin(led_en_GPIO_Port,led_en_Pin,GPIO_PIN_RESET);	
-		HAL_Delay(1000);
-	HAL_GPIO_WritePin(led_en_GPIO_Port,led_en_Pin,GPIO_PIN_SET);	
-}
 
-/* USER CODE END 0 */
-extern uint8_t xingling_flag;
 /**
   * @brief  The application entry point.
   * @retval int
@@ -421,7 +276,6 @@ extern uint8_t xingling_flag;
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -430,66 +284,50 @@ int main(void)
   HAL_Init();
 
   /* USER CODE BEGIN Init */
-
   /* USER CODE END Init */
 
   /* Configure the system clock */
   SystemClock_Config();
 
   /* USER CODE BEGIN SysInit */
-
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_DMA_Init();
   MX_ADC_Init();
-  MX_USART1_UART_Init();
   MX_SPI1_Init();
   MX_RTC_Init();
-//897
-//  /* Initialize interrupts */
+  MX_USART1_UART_Init();
+
+  /* Initialize interrupts */
   MX_NVIC_Init();
   /* USER CODE BEGIN 2 */
-	while(1)
-	{
-    test_flash();
-		HAL_Delay(1000);
-		HAL_Delay(1000);
-	}
+	 debug_usart_dma_open();
+	
 	app_lora_config_init();
- Test_Dev();
+    Test_Dev();
 	 	Reset_Process();
-//	//多久没操作，自动睡眠
-//	   init_sleep_flag=1;
-//	  	    sleep_open();
-//		while(reset_rang_key!=1)
-//		{
-//			printf("123");
-//				 HAL_Delay(1000);
-//		};		
-	//添加部分代码
-		       
- 
-//  /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
-
-
+	 printf("进入sleep");
+		     sleep_open();
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-	 printf("进入sleep");
-		     sleep_open();
-  while (1)
-  {
-		
+	
+	
+	 while(1)
+	 {
 		 lora_process();
 		 check_rung_state();
 		 check_vol_task();  
-		 
+	 }
+		
+		
+	
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-  }
   /* USER CODE END 3 */
 }
 
@@ -557,13 +395,17 @@ static void MX_NVIC_Init(void)
   HAL_NVIC_SetPriority(EXTI4_15_IRQn, 2, 0);
   HAL_NVIC_EnableIRQ(EXTI4_15_IRQn);
   /* ADC1_COMP_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(ADC1_COMP_IRQn, 2, 1);
+  HAL_NVIC_SetPriority(ADC1_COMP_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(ADC1_COMP_IRQn);
+  /* DMA1_Channel2_3_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA1_Channel2_3_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(DMA1_Channel2_3_IRQn);
+  /* USART1_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(USART1_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(USART1_IRQn);
 }
 
 /* USER CODE BEGIN 4 */
-uint32_t system_tick_count=0;
-uint32_t sleep_tick_count=0;
 /* USER CODE END 4 */
 
  /**
@@ -577,46 +419,11 @@ uint32_t sleep_tick_count=0;
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
   /* USER CODE BEGIN Callback 0 */
-   
   /* USER CODE END Callback 0 */
   if (htim->Instance == TIM2) {
     HAL_IncTick();
-		if(dev_init_state==1)
-		{
-		      system_tick_count++;
-		    	if(system_tick_count%1000==0)
-					{
-						system_tick_count=0;
-						sleep_tick_count++;
-					}
-			   if(sleep_tick_count>60)
-				 {
-					 sleep_tick_count=0;
-					 dev_init_state=0;
-				 }
-		}
-		else
-		{
-			sleep_tick_count=0;
-			system_tick_count=0;
-		}
   }
   /* USER CODE BEGIN Callback 1 */
-//	if((password_key==1)&&(sleep_flag==1))
-//	{
-//	    tim_count++;
-//	    if(tim_count>2000)
-//			{
-//				tim_count=0;
-//			HAL_ADC_Start_IT(&hadc);
-//		  }
-//		}
-//	else
-//	{
-//		password_key=0;
-//		tim_count=0;
-//		
-//	}
   /* USER CODE END Callback 1 */
 }
 
@@ -627,8 +434,6 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 void Error_Handler(void)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
-  /* User can add his own implementation to report the HAL error return state */
-
   /* USER CODE END Error_Handler_Debug */
 }
 
@@ -643,8 +448,6 @@ void Error_Handler(void)
 void assert_failed(uint8_t *file, uint32_t line)
 { 
   /* USER CODE BEGIN 6 */
-  /* User can add his own implementation to report the file name and line number,
-     tex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
   /* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */

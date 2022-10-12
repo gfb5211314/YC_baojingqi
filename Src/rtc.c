@@ -6,7 +6,7 @@
   ******************************************************************************
   * @attention
   *
-  * <h2><center>&copy; Copyright (c) 2020 STMicroelectronics.
+  * <h2><center>&copy; Copyright (c) 2022 STMicroelectronics.
   * All rights reserved.</center></h2>
   *
   * This software component is licensed by ST under BSD 3-Clause license,
@@ -52,11 +52,7 @@ void MX_RTC_Init(void)
   }
   /** Enable the WakeUp 
   */
-//  if (HAL_RTCEx_SetWakeUpTimer_IT(&hrtc,72000, RTC_WAKEUPCLOCK_CK_SPRE_16BITS) != HAL_OK)
-//  {
-//    Error_Handler();
-//  }
-	  if (HAL_RTCEx_SetWakeUpTimer_IT(&hrtc,36000, RTC_WAKEUPCLOCK_CK_SPRE_16BITS) != HAL_OK)
+  if (HAL_RTCEx_SetWakeUpTimer_IT(&hrtc, 600, RTC_WAKEUPCLOCK_CK_SPRE_16BITS) != HAL_OK)
   {
     Error_Handler();
   }
