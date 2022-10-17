@@ -303,6 +303,7 @@ int main(void)
   /* Initialize interrupts */
   MX_NVIC_Init();
   /* USER CODE BEGIN 2 */
+  	Init_Dev_Param();
 	 debug_usart_dma_open();
 	
 	app_lora_config_init();

@@ -53,8 +53,9 @@ void send_string_to_eth(uint8_t *p,uint16_t plen)
 //开启DMA接收空闲中断
 void  debug_usart_dma_open()
 {
+	__HAL_UART_ENABLE_IT(&huart1, UART_IT_IDLE);
      HAL_UART_Receive_DMA(&huart1,(uint8_t *)ether_st.RX_pData,200);  //不能启动打开
-     __HAL_UART_ENABLE_IT(&huart1, UART_IT_IDLE);
+     
 }
 //开启接收空闲中断
 
@@ -93,25 +94,25 @@ void process_usart_data()
 	
 	if(ether_st.RX_flag==1)
 	{
-		printf("123");
+	//	printf("123");
 		if(strncmp((char *)ether_st.RX_pData, "sn:",3)==0)
 		{
 			
 			for(uint16_t i=0;i<12;i++)
 			{
-			  printf("sn=%c",ether_st.RX_pData[i+3]) ; 
+		//	  printf("sn=%c",ether_st.RX_pData[i+3]) ; 
 				sn_code[i]=ether_st.RX_pData[i+3];
 			}				
 			
     	Flash_Write_Num_Word(ADDR_FLASH_PAGE_512,(uint32_t *) sn_code, 3 );
 	     Flash_Read_Word( ADDR_FLASH_PAGE_512, (uint32_t *)sn_code,3 ) ;
 			
-			for(uint16_t i=0;i<12;i++)
-			{
-			  printf("sn=%c",sn_code[i]) ; 
-			
-			}	
-			
+//			for(uint16_t i=0;i<12;i++)
+//			{
+//			  printf("sn=%c",sn_code[i]) ; 
+//			
+//			}	
+			send_string_to_eth(sn_code,12);
 		}
 		
 		ether_st.RX_flag=0;

@@ -574,6 +574,15 @@ extern uint8_t sn_code[12];
 uint8_t pin_pack(uint8_t *dev,uint8_t dev_type,uint8_t function_num,uint8_t *data_pack)
 {
 	  uint8_t index=0;
+		//增加product码
+//		 for(uint8_t i=0;i<8;i++)
+//		 {
+//       ether_st.RX_pData[i]=product_key[i];
+//		 }
+		 for(uint8_t i=0;i<12;i++)
+	{
+	  input1[index++]=sn_code[i]; //
+	}
 	  input1[index++]=0x5a;
 	  input1[index++]=0xba;  //报警器厂家识别码
 	  input1[index++]=dev[0];  //设备码
@@ -584,11 +593,7 @@ uint8_t pin_pack(uint8_t *dev,uint8_t dev_type,uint8_t function_num,uint8_t *dat
 	{
 	  input1[index++]=data_pack[i]; //
 	}
-	//增加SN码
-		 for(uint8_t i=0;i<12;i++)
-	{
-	  input1[index++]=sn_code[i]; //
-	}
+
 	//加密
 	data_encrypt(index,input1,TXbuffer);
 //	 	  for(uint8_t i=0;i<index;i++)
