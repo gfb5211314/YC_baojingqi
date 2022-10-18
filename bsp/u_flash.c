@@ -31,17 +31,17 @@ void Flash_Write_Num_Word(uint32_t WriteAddr, uint32_t * pBuffer, uint32_t NumTo
 	  if (HAL_FLASHEx_Erase(&EraseInitStruct, &PAGEError) != HAL_OK)
       {
         // 如果刷除错误
-        printf("\r\n FLASH Erase Fail\r\n");
-        printf("Fail Code:%d\r\n",HAL_FLASH_GetError());
-        printf("Fail Page:%d\r\n",PAGEError);
+//        printf("\r\n FLASH Erase Fail\r\n");
+//        printf("Fail Code:%d\r\n",HAL_FLASH_GetError());
+//        printf("Fail Page:%d\r\n",PAGEError);
       }
 			for(uint32_t i=0;i<NumToWrite;i++)
 			{
 			if (HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, WriteAddr+i*4, *(pBuffer+i)) == HAL_OK){
-         printf("write data 0x%x OK\n", *(pBuffer+i));
+    //     printf("write data 0x%x OK\n", *(pBuffer+i));
       }
       else{
-        printf("failed!!!\n");
+     //   printf("failed!!!\n");
       }
 		  }
       HAL_FLASH_Lock();
@@ -72,7 +72,7 @@ void Flash_Read_Word( uint32_t ReadAddr, uint32_t *pBuffer, uint32_t NumToRead )
 	{
 		pBuffer[i]=STMFLASH_ReadWord(ReadAddr);//读取4个字节.
 		ReadAddr+=4;//偏移4个字节.	
-		    printf("read data 0x%x OK\n", *(pBuffer+i));
+		 //   printf("read data 0x%x OK\n", *(pBuffer+i));
 	}
 }
 uint32_t ab[2]={0x12345678,0x88997766};
@@ -90,7 +90,8 @@ uint32_t factory=0;
 void Init_Dev_Param()
 {
 	
-	Flash_Read_Word( ADDR_FLASH_PAGE_511, (uint32_t *)factory,1) ;
+	Flash_Read_Word( ADDR_FLASH_PAGE_511, (uint32_t *)&factory,1) ;
 	Flash_Read_Word( ADDR_FLASH_PAGE_512, (uint32_t *)sn_code,3 ) ;
+	send_string_to_eth(sn_code,12);
 	
 }

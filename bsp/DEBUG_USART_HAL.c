@@ -53,7 +53,7 @@ void send_string_to_eth(uint8_t *p,uint16_t plen)
 //开启DMA接收空闲中断
 void  debug_usart_dma_open()
 {
-	__HAL_UART_ENABLE_IT(&huart1, UART_IT_IDLE);
+	   __HAL_UART_ENABLE_IT(&huart1, UART_IT_IDLE);
      HAL_UART_Receive_DMA(&huart1,(uint8_t *)ether_st.RX_pData,200);  //不能启动打开
      
 }
@@ -105,7 +105,7 @@ void process_usart_data()
 			}				
 			
     	Flash_Write_Num_Word(ADDR_FLASH_PAGE_512,(uint32_t *) sn_code, 3 );
-	     Flash_Read_Word( ADDR_FLASH_PAGE_512, (uint32_t *)sn_code,3 ) ;
+	        Flash_Read_Word( ADDR_FLASH_PAGE_512, (uint32_t *)sn_code,3 ) ;
 			
 //			for(uint16_t i=0;i<12;i++)
 //			{
