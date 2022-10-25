@@ -80,7 +80,7 @@ void app_lora_config_init()
     G_LoRaConfig.ExplicitHeaderOn = true; //Header开启
     G_LoRaConfig.PayloadLength = 64;      //数据包长度
      astate= SX127X_Lora_init();
-	   printf("astate=%d\r\n",astate);
+	//   printf("astate=%d\r\n",astate);
     if(astate!= NORMAL)	 //无线模块初始化
     {
         while(1)
@@ -218,7 +218,7 @@ void check_rung_state()
       	if(rang_key_flag==1)
 				 {
 					  
-				    
+				    printf("rang_key_flag=%d\r\n",rang_key_flag);
 					   rang_runing();
    							            
 				 }
@@ -962,7 +962,7 @@ uint8_t  factory_parameter_set()
 										   HAL_Delay(1000);	  
           			  runing_state_flag=1;	
 				//新增代码，8月31号
-				            reset_rang_flag=1; //经过初始化，失效报警键复位按钮
+				           reset_rang_flag=1; //经过初始化，失效报警键复位按钮
 				//
 			                	value=1;
 				break;

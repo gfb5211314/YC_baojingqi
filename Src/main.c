@@ -44,7 +44,7 @@ extern uint8_t password_key;
 uint8_t password_key_value=0;
 extern  uint8_t runing_state_flag;
 uint8_t init_sleep_flag=0;
-
+void sleep_init();
 
 
   uint8_t dev_init_state=1;
@@ -66,21 +66,23 @@ void Test_Dev()
 
 void bsp_init_main_key() 
 {
-	  GPIO_InitTypeDef GPIO_InitStruct = {0};
+	   GPIO_InitTypeDef GPIO_InitStruct = {0};
 		
-    __HAL_RCC_GPIOA_CLK_ENABLE(); 			
-	  GPIO_InitStruct.Pin  = rang_key_Pin;
+    __HAL_RCC_GPIOA_CLK_ENABLE(); 	
+		
+	  GPIO_InitStruct.Pin = rang_key_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
     GPIO_InitStruct.Pull = GPIO_PULLUP;
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);		
 		
 		
-		GPIO_InitStruct.Pin  = FANGCHAI_Pin ;
+			 GPIO_InitStruct.Pin = FANGCHAI_Pin ;
     GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
-    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;  //一定要浮空
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);		
-	       MX_RTC_Init();
-			   MX_NVIC_Init();
+ // 	__HAL_RCC_GPIOA_CLK_DISABLE();
+	     MX_RTC_Init();
+			  MX_NVIC_Init();
 
 }	
 
@@ -96,6 +98,7 @@ void Wake_Up_Io_Config()
 	 
 	  HAL_NVIC_SetPriority(EXTI4_15_IRQn, 2, 0);
      HAL_NVIC_EnableIRQ(EXTI4_15_IRQn);
+	 
 	
 }
 
@@ -162,20 +165,27 @@ void stop_mode_config(void)
   __HAL_RCC_GPIOH_CLK_DISABLE();
 
 }
+extern uint8_t rang_key_flag;
+extern uint8_t fangchai_flag;
 void valve_enter_ed_stop_mode(void)
 {
   //config main key with interrupt
+
 	      sleep_flag=1;
      bsp_init_main_key() ;
-	   
+	  
   __HAL_RCC_PWR_CLK_ENABLE();  
-
+  __HAL_UART_DISABLE_IT(&huart1, UART_IT_IDLE);
   HAL_PWR_EnterSTOPMode(PWR_LOWPOWERREGULATOR_ON, PWR_STOPENTRY_WFI);
-	
+//	    HAL_Delay(5);
+   //  sleep_init();
+//		 printf("wkup...\r\n");
+//	 printf("rang_key_flag=%d\r\n",rang_key_flag);
+//	 printf("fangchai_flag=%d\r\n",fangchai_flag);
 }
 void sleep_open()
 {
-	
+
   SX127X_SleepMode(); //睡眠模式
 	stop_mode_config();
 	valve_enter_ed_stop_mode();
@@ -184,16 +194,55 @@ void sleep_open()
 void Sleep_Into()
 {
 	
-     __HAL_RTC_WAKEUPTIMER_EXTI_CLEAR_FLAG();
-	   __HAL_GPIO_EXTI_CLEAR_IT(0x7FFFF);
+  //   __HAL_RTC_WAKEUPTIMER_EXTI_CLEAR_FLAG();
+	 //  __HAL_GPIO_EXTI_CLEAR_IT(0x7FFFF);
 	    SX127X_SleepMode(); //睡眠模式
 	     stop_mode_config();
-	   bsp_init_main_key() ;
+//	   bsp_init_main_key() ;
 	   Wake_Up_Io_Config();
   __HAL_RCC_PWR_CLK_ENABLE();  
   HAL_PWR_EnterSTOPMode(PWR_LOWPOWERREGULATOR_ON, PWR_STOPENTRY_WFI);
 	
 }
+
+//void sleep_init()
+//{
+//    /* USER CODE BEGIN SysInit */
+//	   HAL_UART_DeInit(&huart1);
+//	HAL_GPIO_DeInit(GPIOA, GPIO_PIN_All);
+
+//	HAL_GPIO_DeInit(GPIOC, GPIO_PIN_All);
+//  HAL_GPIO_DeInit(GPIOH, GPIO_PIN_All);
+// 
+////       HAL_UART_DeInit(&hlpuart1);
+//	     HAL_Init();
+//  /* USER CODE BEGIN Init */
+
+//  /* USER CODE END Init */
+
+//  /* Configure the system clock */
+//  SystemClock_Config();
+
+//  /* USER CODE BEGIN SysInit */
+//      HAL_UART_DeInit(&huart1);
+//	     HAL_ADC_DeInit(&hadc);
+//	     HAL_SPI_DeInit(&hspi1);
+////		HAL_GPIO_DeInit(GPIOB, GPIO_PIN_15);
+//  /* USER CODE END SysInit */
+//  /* Initialize all configured peripherals */
+//  MX_GPIO_Init();	
+//  MX_ADC_Init();
+//  MX_USART1_UART_Init();
+//  MX_SPI1_Init();
+//  MX_RTC_Init();
+// 
+////  /* Initialize interrupts */
+//   MX_NVIC_Init();
+//	// 	Init_Dev_Param();
+
+//  /* USER CODE BEGIN 2 */
+//	app_lora_config_init();
+//}
 
 void sleep_init()
 {
@@ -228,9 +277,11 @@ void sleep_init()
 
 //  /* Initialize interrupts */
    MX_NVIC_Init();
+	// 	debug_usart_dma_open();
   /* USER CODE BEGIN 2 */
 	app_lora_config_init();
 }
+extern uint8_t reset_rang_flag;
 void  Reset_Process()
 {
 	  
@@ -241,14 +292,14 @@ void  Reset_Process()
 		        {
 			       case 0 : 
 							    
-							      reset_sleep_flag=1;
+					
 				              Sleep_Into();
 						          sleep_init();
                      dev_init_state=1;
 			        break;
 			       case 1 :
-				           reset_sleep_flag=0;
-			       	net_suceess_flag=factory_parameter_set();
+			
+			  	net_suceess_flag=factory_parameter_set();
 					    	 process_usart_data();
 				      if(reset_rang_key==1)
 				      {
@@ -260,6 +311,7 @@ void  Reset_Process()
 						}
 			}while(net_suceess_flag!=1);
 			dev_init_state=3;
+				
 }
 			
 	
@@ -307,12 +359,13 @@ int main(void)
 	 debug_usart_dma_open();
 	
 	app_lora_config_init();
-    Test_Dev();
+   Test_Dev();
 	 	Reset_Process();
 	 printf("进入sleep");
-		     sleep_open();
-  /* USER CODE END 2 */
 
+		  sleep_open();
+  /* USER CODE END 2 */
+	
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
 	
@@ -399,14 +452,16 @@ static void MX_NVIC_Init(void)
   HAL_NVIC_SetPriority(ADC1_COMP_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(ADC1_COMP_IRQn);
   /* DMA1_Channel2_3_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA1_Channel2_3_IRQn, 0, 0);
+  HAL_NVIC_SetPriority(DMA1_Channel2_3_IRQn, 1, 0);
   HAL_NVIC_EnableIRQ(DMA1_Channel2_3_IRQn);
   /* USART1_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(USART1_IRQn, 0, 0);
+  HAL_NVIC_SetPriority(USART1_IRQn, 2, 1);
   HAL_NVIC_EnableIRQ(USART1_IRQn);
 }
 
 /* USER CODE BEGIN 4 */
+uint32_t system_tick_count=0;
+uint32_t sleep_tick_count=0;
 /* USER CODE END 4 */
 
  /**
@@ -425,6 +480,25 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
     HAL_IncTick();
   }
   /* USER CODE BEGIN Callback 1 */
+	        if(dev_init_state==1)
+        {
+              system_tick_count++;
+                if(system_tick_count%1000==0)
+                    {
+                        system_tick_count=0;
+                        sleep_tick_count++;
+                    }
+               if(sleep_tick_count>60)
+                 {
+                     sleep_tick_count=0;
+                     dev_init_state=0;
+                 }
+        }
+        else
+        {
+            sleep_tick_count=0;
+            system_tick_count=0;
+        }
   /* USER CODE END Callback 1 */
 }
 

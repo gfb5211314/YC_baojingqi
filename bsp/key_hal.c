@@ -75,12 +75,10 @@ uint8_t  scan_key()
 
 }
 extern uint8_t init_sleep_flag;
-extern uint8_t dev_init_state;
-extern uint8_t reset_sleep_flag;
+extern  uint8_t dev_init_state;
+extern  uint32_t sleep_tick_count;
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
-	
-	
    
      HAL_Delay(10);/* 延时一小段时间，消除抖动 */
 	if((scan_key_flag==1)||(runing_state_flag==1))
@@ -91,7 +89,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
     HAL_Delay(10);/* 延时一小段时间，消除抖动 */
     if(HAL_GPIO_ReadPin(key1_GPIO_Port,key1_Pin)==0)
     {
-			  //  printf("1");
+			    printf("1");
 	        password_key=1;
           key_state_value=1;
 	
@@ -191,9 +189,21 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 			 key_state_value=0;
 			     sleep_init();
 		     	 sleep_flag=0;
-	 }
-	 //20220908 增加设备待机
-
+//		     	init_key_flag=1;
+			printf("醒来\r\n");
+	}
+	  if(dev_init_state==1)
+			 {
+				 sleep_tick_count=0;
+				 
+			 }
+//   if(init_sleep_flag==1)
+//	 {
+//		  key_state_value=0;
+//			      sleep_init();
+//		     	 init_sleep_flag=0;
+//      printf("醒来\r\n");
+//	 }
 		
 }
-//
+ 

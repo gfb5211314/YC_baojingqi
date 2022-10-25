@@ -23,8 +23,7 @@ void HAL_RTCEx_WakeUpTimerEventCallback(RTC_HandleTypeDef *hrtc)
 		    if(sleep_flag==1)
 				{
 					sleep_flag=0;
-					sleep_init();
-//					adc_start();		
+					sleep_init();	
           adc_start();						
 				}
 	
@@ -44,7 +43,7 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
 	  adc_value=HAL_ADC_GetValue(hadc);
 	  adc_vol=(adc_value/4096*3.3-Zero_voltage)*(100/(full_voltage-Zero_voltage));
     	adc_temp=adc_vol;
-	 printf("当前电压=%d\r\n",adc_temp);
+//	 printf("当前电压=%d\r\n",adc_temp);
 	   vol_conv_flag=1;
-		adc_start();
+	
 }
