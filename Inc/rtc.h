@@ -27,7 +27,8 @@
 #include "main.h"
 
 /* USER CODE BEGIN Includes */
-
+#define  SET_10_HOUR       36000    //10小时唤醒  36000   //3600   1小时      300
+#define  SET_2_HOUR        8100    //2小时唤醒   7200//    600S   10分钟
 /* USER CODE END Includes */
 
 extern RTC_HandleTypeDef hrtc;

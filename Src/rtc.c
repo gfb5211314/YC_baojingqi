@@ -31,16 +31,21 @@ RTC同步分频系数，必须先设置同步分频（Sprec），再设置异步分频（Asprec）
 /* USER CODE END 0 */
 
 RTC_HandleTypeDef hrtc;
-
+uint32_t  waku_sec=36000; // 唤醒36000s   36000/60/60  ==10小时    7200s  7200/60/60=2小时
+void Set_Wakup_Sec(uint32_t sec)
+{
+	waku_sec=sec;	
+}
 /* RTC init function */
+
 void MX_RTC_Init(void)
 {
 
-  /** Initialize RTC Only 
+  /** Initialize RTC Only    37K晶振rtc  37000 / (36+1)x(999+1)=1hz  1s
   */
   hrtc.Instance = RTC;
   hrtc.Init.HourFormat = RTC_HOURFORMAT_24;
-  hrtc.Init.AsynchPrediv = 36;
+  hrtc.Init.AsynchPrediv = 36;  
   hrtc.Init.SynchPrediv = 999;
   hrtc.Init.OutPut = RTC_OUTPUT_DISABLE;
   hrtc.Init.OutPutRemap = RTC_OUTPUT_REMAP_NONE;
@@ -52,7 +57,7 @@ void MX_RTC_Init(void)
   }
   /** Enable the WakeUp 
   */
-  if (HAL_RTCEx_SetWakeUpTimer_IT(&hrtc,36000, RTC_WAKEUPCLOCK_CK_SPRE_16BITS) != HAL_OK)
+  if (HAL_RTCEx_SetWakeUpTimer_IT(&hrtc,waku_sec, RTC_WAKEUPCLOCK_CK_SPRE_16BITS) != HAL_OK)
   {
     Error_Handler();
   }

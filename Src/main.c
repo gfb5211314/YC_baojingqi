@@ -12,11 +12,12 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "main_app.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
-
+#define SW_VERSION        "LORA_RING_V1.10_2022-12-08"
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
@@ -200,49 +201,12 @@ void Sleep_Into()
 	     stop_mode_config();
 //	   bsp_init_main_key() ;
 	   Wake_Up_Io_Config();
-  __HAL_RCC_PWR_CLK_ENABLE();  
+    __HAL_RCC_PWR_CLK_ENABLE();  
   HAL_PWR_EnterSTOPMode(PWR_LOWPOWERREGULATOR_ON, PWR_STOPENTRY_WFI);
 	
 }
 
-//void sleep_init()
-//{
-//    /* USER CODE BEGIN SysInit */
-//	   HAL_UART_DeInit(&huart1);
-//	HAL_GPIO_DeInit(GPIOA, GPIO_PIN_All);
 
-//	HAL_GPIO_DeInit(GPIOC, GPIO_PIN_All);
-//  HAL_GPIO_DeInit(GPIOH, GPIO_PIN_All);
-// 
-////       HAL_UART_DeInit(&hlpuart1);
-//	     HAL_Init();
-//  /* USER CODE BEGIN Init */
-
-//  /* USER CODE END Init */
-
-//  /* Configure the system clock */
-//  SystemClock_Config();
-
-//  /* USER CODE BEGIN SysInit */
-//      HAL_UART_DeInit(&huart1);
-//	     HAL_ADC_DeInit(&hadc);
-//	     HAL_SPI_DeInit(&hspi1);
-////		HAL_GPIO_DeInit(GPIOB, GPIO_PIN_15);
-//  /* USER CODE END SysInit */
-//  /* Initialize all configured peripherals */
-//  MX_GPIO_Init();	
-//  MX_ADC_Init();
-//  MX_USART1_UART_Init();
-//  MX_SPI1_Init();
-//  MX_RTC_Init();
-// 
-////  /* Initialize interrupts */
-//   MX_NVIC_Init();
-//	// 	Init_Dev_Param();
-
-//  /* USER CODE BEGIN 2 */
-//	app_lora_config_init();
-//}
 
 void sleep_init()
 {
@@ -349,7 +313,7 @@ int main(void)
   MX_DMA_Init();
   MX_ADC_Init();
   MX_SPI1_Init();
-  MX_RTC_Init();
+//  MX_RTC_Init();
   MX_USART1_UART_Init();
 
   /* Initialize interrupts */
@@ -462,6 +426,10 @@ static void MX_NVIC_Init(void)
 /* USER CODE BEGIN 4 */
 uint32_t system_tick_count=0;
 uint32_t sleep_tick_count=0;
+
+
+extern uint32_t tim_tick;
+extern uint8_t tim_tick_flag;
 /* USER CODE END 4 */
 
  /**
@@ -475,6 +443,24 @@ uint32_t sleep_tick_count=0;
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
   /* USER CODE BEGIN Callback 0 */
+	 if (htim->Instance == TIM2)
+	 {
+		   //超时3秒 电池电量
+	    if(tim_tick_flag==1)
+			{
+				tim_tick++;
+				if(tim_tick>3000)
+				{
+					tim_tick_flag=2; //超时 
+					tim_tick=0;
+				}
+				
+			}
+			else
+			{
+				tim_tick=0;
+			}
+		}
   /* USER CODE END Callback 0 */
   if (htim->Instance == TIM2) {
     HAL_IncTick();
@@ -499,6 +485,9 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
             sleep_tick_count=0;
             system_tick_count=0;
         }
+				
+				
+				
   /* USER CODE END Callback 1 */
 }
 

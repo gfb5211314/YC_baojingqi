@@ -6,6 +6,7 @@
 #include "string.h"
 #include "key_hal.h"
 #include "speak_hal.h"
+#include "rtc.h"
 //业务层
 #define join_network   0x01    //入网请求
 #define join_network_state  0x02 //入网状态发送
@@ -97,6 +98,9 @@ void app_lora_config_init()
  uint8_t flag=0;
  uint8_t rang_state=0;
  uint8_t fagchai_state=0;
+ uint8_t adc_send_flag=0;
+uint32_t tim_tick=0;
+uint8_t tim_tick_flag=0;
 //检测电池电压
 void check_vol_task()
 {
@@ -112,9 +116,12 @@ void check_vol_task()
 			    set_txrx_datalen(pack_len);//数据包长度
            SX127X_TxPacket(TXbuffer); 
 				   vol_conv_flag=0;
-				   HAL_Delay(1000);
-			  	  HAL_Delay(1000);
-				   sleep_open(); 
+						adc_send_flag=1;
+						tim_tick_flag=1;
+							 /****2022-12-08 ***/
+							 /*时钟应答才睡眠***/
+//			  	  HAL_Delay(1000);
+//				    sleep_open(); 
 				
 			}
 	
@@ -395,6 +402,16 @@ void lora_process()
 								 }
 								 EEPROM_WriteBytes(xiaojing_password, 20,6);  //把用户密码写进去
 								 break;
+								 			 //收到电池心跳包
+								 case  0x03 :
+									             tim_tick_flag=0;
+									             adc_send_flag=0;
+								           Set_Wakup_Sec(SET_10_HOUR);	
+                                 if(rang_key_flag==0)	
+																 {																	 
+				                          sleep_open();   //设置10个小时睡眠
+																 }
+							      break;
 							 }
 						 
 						 
@@ -409,6 +426,13 @@ void lora_process()
 					break;
 				
 			}
+			  	//超时2秒没有应答
+				if((adc_send_flag==1&&rang_key_flag==0)&&(tim_tick_flag==2))
+				{
+					      adc_send_flag=0;
+					     Set_Wakup_Sec(SET_2_HOUR);							    		  	
+				         sleep_open();   //设置2个小时睡眠
+				}
 }
 uint8_t chuchang_lora_process()
 {
@@ -528,7 +552,11 @@ uint8_t chuchang_lora_process()
 				               }
                         value=4;
 						        }
-                   break;	 							 
+                   break;	 
+										//电池电量应答
+                case	Power_report:
+               
+                 break;								
 							
 						 
 					 }
@@ -950,7 +978,8 @@ uint8_t  factory_parameter_set()
 						//
 				case  18: 
 					//播放语音:设备开始工作 ,绿灯亮起来
-				//
+			
+				    adc_start();	  //获取电池电量
   	       SX127X_StandbyMode();   //待机模式   
 			      memset(TXbuffer, 0, sizeof(TXbuffer));	//qingling
 			       lora_data_state=1;
@@ -959,7 +988,12 @@ uint8_t  factory_parameter_set()
             SX127X_TxPacket(TXbuffer);  
                   Line_1A_WT588S(14);//设备开始工作
 				               HAL_Delay(1000);
-										   HAL_Delay(1000);	  
+										   HAL_Delay(1000);	
+				pack_len=pin_pack(dev_num,0x01,0x03,&adc_temp); //发送电池电量
+			  //  printf("pack_len=%d\r\n",pack_len);
+			     set_txrx_datalen(pack_len);//数据包长度
+           SX127X_TxPacket(TXbuffer); 	
+                   vol_conv_flag=0;		 //清零0adc		
           			  runing_state_flag=1;	
 				//新增代码，8月31号
 				           reset_rang_flag=1; //经过初始化，失效报警键复位按钮
