@@ -208,6 +208,8 @@ void Sleep_Into()
 
 
 
+
+
 void sleep_init()
 {
     /* USER CODE BEGIN SysInit */
@@ -317,7 +319,7 @@ int main(void)
   MX_USART1_UART_Init();
 
   /* Initialize interrupts */
-  MX_NVIC_Init();
+   MX_NVIC_Init();
   /* USER CODE BEGIN 2 */
   	Init_Dev_Param();
 	 debug_usart_dma_open();
@@ -338,7 +340,8 @@ int main(void)
 	 {
 		 lora_process();
 		 check_rung_state();
-		 check_vol_task();  
+		 check_vol_task(); 
+     chongfa_lora_data();		 
 	 }
 		
 		
@@ -427,6 +430,8 @@ static void MX_NVIC_Init(void)
 uint32_t system_tick_count=0;
 uint32_t sleep_tick_count=0;
 
+uint32_t beep_tick_count=0;
+uint32_t beep_500ms_tick_count=0;
 
 extern uint32_t tim_tick;
 extern uint8_t tim_tick_flag;
@@ -445,11 +450,11 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
   /* USER CODE BEGIN Callback 0 */
 	 if (htim->Instance == TIM2)
 	 {
-		   //超时3秒 电池电量
+		   //超时30秒 电池电量
 	    if(tim_tick_flag==1)
 			{
 				tim_tick++;
-				if(tim_tick>3000)
+				if(tim_tick>30000)
 				{
 					tim_tick_flag=2; //超时 
 					tim_tick=0;
@@ -463,6 +468,13 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 		}
   /* USER CODE END Callback 0 */
   if (htim->Instance == TIM2) {
+		beep_tick_count++;  //时钟计数
+		if(beep_tick_count>500)
+		{
+			beep_tick_count=0;
+			beep_500ms_tick_count++;
+			
+		}
     HAL_IncTick();
   }
   /* USER CODE BEGIN Callback 1 */

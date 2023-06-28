@@ -274,7 +274,7 @@ typedef enum
 #define RFLR_IRQFLAGS_RXDONE                        0x40 
 #define RFLR_IRQFLAGS_PAYLOADCRCERROR               0x20 
 #define RFLR_IRQFLAGS_VALIDHEADER                   0x10 
-#define RFLR_IRQFLAGS_TXDONE                        0x08 
+#define RFLR_IRQFLAGS_TXDONE                        0x08  
 #define RFLR_IRQFLAGS_CADDONE                       0x04 
 #define RFLR_IRQFLAGS_FHSSCHANGEDCHANNEL            0x02 
 #define RFLR_IRQFLAGS_CADDETECTED                   0x01 

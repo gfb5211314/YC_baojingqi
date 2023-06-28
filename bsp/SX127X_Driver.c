@@ -286,6 +286,7 @@ tSX127xError SX127X_Lora_init(void)
   */
 void SX127X_TxPacket(uint8_t*data)
 {
+	  
     SX127X_Write( REG_LR_OPMODE, 0x80 | RFLR_OPMODE_STANDBY );
     SX127X_Write( REG_LR_PREAMBLEMSB, 0);
     SX127X_Write( REG_LR_PREAMBLELSB, 10);
@@ -306,7 +307,7 @@ void SX127X_TxPacket(uint8_t*data)
   * @∑µªÿ÷µ£∫Œﬁ
   */
 void SX127X_StartRx(void)
-{
+{   
     SX127X_Write( REG_LR_OPMODE, 0x80 | RFLR_OPMODE_STANDBY );
     SX127X_Write( REG_LR_PREAMBLEMSB, 0);
     SX127X_Write( REG_LR_PREAMBLELSB, 10);

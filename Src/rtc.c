@@ -31,7 +31,7 @@ RTC同步分频系数，必须先设置同步分频（Sprec），再设置异步分频（Asprec）
 /* USER CODE END 0 */
 
 RTC_HandleTypeDef hrtc;
-uint32_t  waku_sec=36000; // 唤醒36000s   36000/60/60  ==10小时    7200s  7200/60/60=2小时
+uint32_t  waku_sec=180; // 唤醒36000s   36000/60/60  ==10小时    7200s  7200/60/60=2小时
 void Set_Wakup_Sec(uint32_t sec)
 {
 	waku_sec=sec;	

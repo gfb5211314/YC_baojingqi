@@ -7,6 +7,8 @@
 #include "key_hal.h"
 #include "speak_hal.h"
 #include "rtc.h"
+
+#include <stdlib.h>
 //业务层
 #define join_network   0x01    //入网请求
 #define join_network_state  0x02 //入网状态发送
@@ -22,8 +24,8 @@
 #define xiaojing_num          0x13   //消警指令下发
 uint32_t Fre[6] = {433800000,470800000, 494600000, 510000000, 868000000, 915000000};   //收发频率
 uint8_t communication_states; //业务状态
-uint8_t TXbuffer[50] = {0};
-uint8_t RXbuffer[50] = {0};
+uint8_t TXbuffer[256] = {0};
+uint8_t RXbuffer[256] = {0};
 uint16_t T_Cnt = 0;
 uint8_t factory_parameter_flag=0;    //出厂是否设置
 uint8_t user_password[10]={1,2,3,1,2,3};        //用户密码
@@ -112,7 +114,7 @@ void check_vol_task()
 								 adc_temp=100;
 							 }
 		     	pack_len=pin_pack(dev_num,0x01,0x03,&adc_temp); //
-			    printf("pack_len=%d\r\n",pack_len);
+			//    printf("pack_len=%d\r\n",pack_len);
 			    set_txrx_datalen(pack_len);//数据包长度
            SX127X_TxPacket(TXbuffer); 
 				   vol_conv_flag=0;
@@ -120,45 +122,124 @@ void check_vol_task()
 						tim_tick_flag=1;
 							 /****2022-12-08 ***/
 							 /*时钟应答才睡眠***/
-//			  	  HAL_Delay(1000);
+  		  	  HAL_Delay(50);
 //				    sleep_open(); 
 				
 			}
 	
 	
 }
+extern uint32_t beep_500ms_tick_count;
+uint32_t last_beep_500ms_tick_count=0;
+ static uint8_t chongfa_state=5;
 void rang_runing()
 {
-	  printf("rang_state=%d",rang_state);
+	
+//	  printf("rang_state=%d",rang_state);
 	 switch(rang_state)
 	 {
 		 case 0 :
-			     chongfa_count=0;
+			        chongfa_count=0;
 			       SX127X_StandbyMode();   //待机模式   
 		           	lora_data_state=1;
 		     	pack_len=pin_pack(dev_num,0x01,0x12,&lora_data_state); //
-			    printf("pack_len=%d\r\n",pack_len);
+		//	    printf("pack_len=%d\r\n",pack_len);
 			    set_txrx_datalen(pack_len);//数据包长度
            SX127X_TxPacket(TXbuffer); 
    		         rang_state=1;
-			         
+			       last_beep_500ms_tick_count= beep_500ms_tick_count;
+		        chongfa_state=5;
 		                 break;
 		 case 1 :    
-		       	          printf("一键启动报警\r\n");					
+		       	      //    printf("一键启动报警\r\n");					
 					              Line_1A_WT588S(10);//
-				               HAL_Delay(1000);  //延迟播放音乐
-										   HAL_Delay(1000);
-		                      rang_state=2;
+//				                HAL_Delay(1000);  //延迟播放音乐
+//										    HAL_Delay(1000);
+//		                      rang_state=2;
+		                  rang_state=4; //等待音乐播放完
 		                 break;
+		 //等待音乐播放完
+		 case 4 :
+			        if((beep_500ms_tick_count-last_beep_500ms_tick_count)>3)
+									 {
+										 
+										  rang_state=2;
+										 
+									 }
+		 break;
 		 case  2 :    
 				
 		                   HAL_GPIO_TogglePin(led_en_GPIO_Port,led_en_Pin);
                        Line_1A_WT588S(16);//			      
-				               HAL_Delay(500);  //延迟播放音乐
-		                   chongfa_flag=1;
+//				                HAL_Delay(500);  //延迟播放音乐
+		                 //  chongfa_flag=1;
+		                  last_beep_500ms_tick_count= beep_500ms_tick_count;
+		                      rang_state=5;
 	   			            	
-		        break;			      
+		        break;	
+		 case 5 :
+          if((beep_500ms_tick_count-last_beep_500ms_tick_count)>1)
+									 {
+										 //  printf("进入重发\r\n");
+									      	 rang_state=2;
+										      chongfa_flag=1;
+			
+										 
+									 }
+      break;		 
 	 }	
+}
+uint32_t last_chongfa_tick_count=0;
+uint8_t rand_data=0;
+
+void chongfa_lora_data()
+{
+	  
+  if(( rang_key_flag==1)||(fangchai_flag==1))
+	{
+			
+	  switch(chongfa_state)
+		{
+			case 0 :
+			//   	printf("记录当前时间\r\n");
+				      last_chongfa_tick_count=beep_500ms_tick_count;
+			    
+			        rand_data = rand()%40;
+		//	printf("last_chongfa_tick_count=%d\r\n",last_chongfa_tick_count);
+		//		printf("rand_data=%d\r\n",rand_data);
+			     chongfa_state=1;
+			break;
+			case 1 :
+			//printf("beep_500ms_tick_count=%d\r\n",beep_500ms_tick_count);
+				       if((beep_500ms_tick_count-last_chongfa_tick_count)>(50+rand_data))
+							 {
+								      send_rang_data(); //重发	
+								 
+								 	if(fangchai_flag==1)
+									{
+										
+											send_fangchai_data(); //重发
+									}
+									chongfa_state=0;
+							 }
+			     
+			break;
+			case 5 :
+         	if(chongfa_flag==1)
+					 { 				 
+						 chongfa_state=0;
+					 }
+     break;			
+		}
+			
+	}	
+//	else
+//	{
+//		 chongfa_state=0;
+//		
+//	}
+	
+
 }
 void fangchai_runing()
 {
@@ -174,10 +255,10 @@ void fangchai_runing()
 			    set_txrx_datalen(pack_len);//数据包长度
            SX127X_TxPacket(TXbuffer); 
    		         fagchai_state=1;
-		                 
+		           chongfa_state=5;  
 		                 break;
 		 case 1 :    
-		       printf("防拆启动报警\r\n");
+		          printf("防拆启动报警\r\n");
 					            Line_1A_WT588S(12);//报警成功
 				               HAL_Delay(1000);  //延迟播放音乐
 										   HAL_Delay(1000);
@@ -189,12 +270,12 @@ void fangchai_runing()
 			  
 		 
 		 
-		               printf("报警声音\r\n");
-		                   HAL_GPIO_TogglePin( led_en_GPIO_Port,led_en_Pin);      
+		                  printf("报警声音\r\n");
+		                 HAL_GPIO_TogglePin( led_en_GPIO_Port,led_en_Pin);      
 					            Line_1A_WT588S(16);//报警成功				      
 				               HAL_Delay(500);  //延迟播放音乐
 //										send_fangchai_data(); //重发
-		                    chongfa_flag=1;
+		                  chongfa_flag=1;
 		        break;			      
 	 }	
 }
@@ -215,7 +296,7 @@ void send_fangchai_data()
 	         SX127X_StandbyMode();   //待机模式   
 		            	lora_data_state=1;
 		     	pack_len=pin_pack(dev_num,0x01,0x04,&lora_data_state); //
-			    printf("pack_len=%d\r\n",pack_len);
+			  //  printf("pack_len=%d\r\n",pack_len);
 			    set_txrx_datalen(pack_len);//数据包长度
            SX127X_TxPacket(TXbuffer); 
 	
@@ -225,7 +306,7 @@ void check_rung_state()
       	if(rang_key_flag==1)
 				 {
 					  
-				    printf("rang_key_flag=%d\r\n",rang_key_flag);
+				 //   printf("rang_key_flag=%d\r\n",rang_key_flag);
 					   rang_runing();
    							            
 				 }
@@ -241,15 +322,15 @@ void check_rung_state()
 					//撤防成功
 					if(password_key_value==1)
 					{
-						  SX127X_StandbyMode();   //待机模式   	
-                      lora_data_state=1;								 
+					 	  SX127X_StandbyMode();   //待机模式   	
+                 lora_data_state=1;								 
 						pack_len=pin_pack(dev_num,0x01,0x21,&lora_data_state); //发送撤防告知后台
 			       set_txrx_datalen(pack_len);//数据包长度
                  SX127X_TxPacket(TXbuffer);  
 						    Line_1A_WT588S(13);//
 						  HAL_Delay(1000);  //延迟播放音乐
 						password_key_value=0;
-						printf("12345");
+			//			printf("12345");
 						HAL_NVIC_SystemReset();
 						  rang_key_flag=0;   						
 					}
@@ -258,7 +339,7 @@ void check_rung_state()
 					{
 						   chongfa_count=0;
 						password_key_value=0;
-						    printf("8888");
+					//	    printf("8888");
 							    SX127X_StandbyMode();   //待机模式   	
                       lora_data_state=1;								 
 			    pack_len=pin_pack(dev_num,0x01,0x13,&lora_data_state); 
@@ -269,12 +350,16 @@ void check_rung_state()
 								 
 				               HAL_Delay(1000);  //延迟播放音乐
 //										   HAL_Delay(1000);
+					                  	chongfa_flag=0;
 									          rang_key_flag=0;
 								             rang_state=0;
 					              	fagchai_state=0;
-					         	 rang_key_flag=0;  
-                     fangchai_flag=0; 	
-						
+					         	    rang_key_flag=0;  
+                        fangchai_flag=0; 	
+						              rang_key_flag=0;
+								          fangchai_flag=0;
+								             rang_state=0;
+								           password_key=0;
 							           	 sleep_open();
 						 
   						
@@ -282,7 +367,7 @@ void check_rung_state()
 				}
 }
 	
-void lora_process()
+ void lora_process()
 {
 //	 printf("communication_states=%d\r\n",communication_states);
 	  switch(communication_states)
@@ -290,61 +375,60 @@ void lora_process()
         case APP_IDLE:
           if(DIO0_GetState() == GPIO_PIN_SET)
          {      
-        SX127X_Read(REG_LR_IRQFLAGS, &flag);
-        SX127X_Write(REG_LR_IRQFLAGS, 0xff); //clear flags
-        if(flag & RFLR_IRQFLAGS_TXDONE)
-        {
-            communication_states = TX_DONE;
-//					  printf("send sucess\r\n");
-        }
-        else if(flag & RFLR_IRQFLAGS_RXDONE)
-        {
-            communication_states = RX_DONE;
-//				   	printf("rx sucess\r\n");
-        }
-				
-       }      
-         if(chongfa_flag==1)
-					 { 
-						    chongfa_count++;
-						    if(chongfa_count>35)
-								{
-			          	send_rang_data(); //重发	
-									if(fangchai_flag==1)
-									{
-										send_fangchai_data(); //重发
-										
-									}
-									chongfa_count=0;
-								}
-					 }
+							SX127X_Read(REG_LR_IRQFLAGS, &flag);
+						SX127X_Write(REG_LR_IRQFLAGS, 0xff); //clear flags
+						if(flag & RFLR_IRQFLAGS_TXDONE)
+						{
+								communication_states = TX_DONE;
+					//		  printf("send sucess\r\n");
+						}
+						else if(flag & RFLR_IRQFLAGS_RXDONE)
+						{
+								communication_states = RX_DONE;
+				//		   	printf("rx sucess\r\n");
+						}				
+        }      
+//         if(chongfa_flag==1)
+//					 { 
+//						    chongfa_count++;
+//						    if(chongfa_count>35)
+//								{
+//			          	send_rang_data(); //重发	
+//									if(fangchai_flag==1)
+//									{
+//										send_fangchai_data(); //重发
+//										
+//									}
+//									chongfa_count=0;
+//								}
+//					 }
             break;
-     
+					 //发送完成
         case TX_DONE:
-
-            SX127X_StandbyMode();   //待机模式
+    
+         //   SX127X_StandbyMode();   //标准模式
             SX127X_StartRx();
-   communication_states = APP_IDLE;
+         communication_states = APP_IDLE;
             break;
 					
 				case RX_DONE :
 				    
 					 SX127X_Read(REG_LR_NBRXBYTES, &G_LoRaConfig.PayloadLength); //获取数据长度
-					 set_txrx_datalen(G_LoRaConfig.PayloadLength);
-				   SX127X_RxPacket(RXbuffer);		
-			   //   SX127X_SleepMode(); //睡眠模式
-		       SX127X_StandbyMode();  //切换状态清空FIFO，要不收到250个字节，会出错			
+				//	 set_txrx_datalen(G_LoRaConfig.PayloadLength);
+				   SX127X_RxPacket(RXbuffer);		 //读取数据
+			   //SX127X_SleepMode(); //睡眠模式
+		 	
 
 				/*******************解密**********************************************/
 						data_decrypt(G_LoRaConfig.PayloadLength,RXbuffer, RXbuffer);
 				/******************************************************************/
 				
-				 for(uint8_t i=0;i<G_LoRaConfig.PayloadLength;i++)
-			 	 {
-					printf("RXbuffer[%d]=%02x\r\n",i,RXbuffer[i]);
-									
-				 }
-				 printf("当前设备地址:%d-%d\r\n",dev_num[0],dev_num[1]);
+//				 for(uint8_t i=0;i<G_LoRaConfig.PayloadLength;i++)
+//			 	 {
+//					printf("RXbuffer[%d]=%02x\r\n",i,RXbuffer[i]);
+//									
+//				 }
+			//	 printf("当前设备地址:%d-%d\r\n",dev_num[0],dev_num[1]);
 				 //接收数据处理
 				   if(RXbuffer[0]==0x5a&&RXbuffer[1]==0xa5&&RXbuffer[2]==dev_num[0]&&RXbuffer[3]==dev_num[1]&&RXbuffer[4]==0x01)
 					 {
@@ -353,8 +437,8 @@ void lora_process()
 								    //后台接收消警指令
 								 case  0x12 : 
 									    
-								   printf("后台收到报警指令\r\n");
-								             
+						//		   printf("后台收到报警指令\r\n");
+								             rang_state=0;
 //							            rang_key_flag=0;
 //								           rang_state=0;
 								 break;
@@ -391,7 +475,9 @@ void lora_process()
 								          fangchai_flag=0;
 								             rang_state=0;
 								           password_key=0;
+								           fagchai_state=0;
 							           	 sleep_open();
+													 
 								 break;
 								 //后台设置消警密码
 								 case  0x09 :
@@ -406,10 +492,11 @@ void lora_process()
 								 case  0x03 :
 									             tim_tick_flag=0;
 									             adc_send_flag=0;
-								           Set_Wakup_Sec(SET_10_HOUR);	
-                                 if(rang_key_flag==0)	
-																 {																	 
-				                          sleep_open();   //设置10个小时睡眠
+								              Set_Wakup_Sec(SET_10_HOUR);	
+                                 if((rang_key_flag==0)&&(fangchai_flag==0))
+																 {			
+																	    
+				                                sleep_open();   //设置10个小时睡眠
 																 }
 							      break;
 							 }
@@ -421,14 +508,16 @@ void lora_process()
 						 //qingling
 						 
 					 }
+					 //  SX127X_StandbyMode();  //切换状态清空FIFO，要不收到250个字节，会出错		
 					    SX127X_StartRx();
 					 	 communication_states = APP_IDLE;
 					break;
 				
 			}
 			  	//超时2秒没有应答
-				if((adc_send_flag==1&&rang_key_flag==0)&&(tim_tick_flag==2))
+				if((adc_send_flag==1)&&(rang_key_flag==0)&&(tim_tick_flag==2))
 				{
+				      	tim_tick_flag=0;
 					      adc_send_flag=0;
 					     Set_Wakup_Sec(SET_2_HOUR);							    		  	
 				         sleep_open();   //设置2个小时睡眠
@@ -437,44 +526,41 @@ void lora_process()
 uint8_t chuchang_lora_process()
 {
 	      uint8_t  value=0;
-	     static uint8_t lora_com=APP_IDLE;
+	        uint8_t flag=0;
+	  static uint8_t lora_com=APP_IDLE;
 	  switch(lora_com)
         {
         case APP_IDLE:
          if(DIO0_GetState() == GPIO_PIN_SET)
        {
-        uint8_t flag=0;
+      
         SX127X_Read(REG_LR_IRQFLAGS, &flag);
         SX127X_Write(REG_LR_IRQFLAGS, 0xff); //clear flags
         if(flag & RFLR_IRQFLAGS_TXDONE)
         {
             lora_com = TX_DONE;
-//					  printf("send sucess\r\n");
+				//  printf("send sucess\r\n");
         }
         else if(flag & RFLR_IRQFLAGS_RXDONE)
         {
 				
             lora_com = RX_DONE;
-//					printf("rx sucess\r\n");
+	//			printf("rx sucess\r\n");
         }
         }     
             break;
-
-//        case TX_ING:			  
-//            SX127X_TxPacket(TXbuffer);
-//            communication_states = APP_IDLE;
-//            break;
      
         case TX_DONE:
-					SX127X_StandbyMode();   //待机模式
-            SX127X_StartRx();
+				//	SX127X_StandbyMode();   //待机模式
+             SX127X_StartRx();
 				     lora_com = APP_IDLE;
-            break;				
-				case RX_DONE :
+            break;		
+//接收完成				
+				case RX_DONE : 
 					 SX127X_Read(REG_LR_NBRXBYTES, &G_LoRaConfig.PayloadLength); //获取数据长度
 //					 set_txrx_datalen(G_LoRaConfig.PayloadLength);
 				   SX127X_RxPacket(RXbuffer);		
-				     SX127X_StandbyMode();  //切换状态清空FIFO，要不收到250个字节，会出错
+				    // SX127X_StandbyMode();  //切换状态清空FIFO，要不收到250个字节，会出错
 			   //   SX127X_SleepMode(); //睡眠模式		     		
 //				 for(uint8_t i=0;i<G_LoRaConfig.PayloadLength;i++)
 //			 	 {
@@ -488,8 +574,7 @@ uint8_t chuchang_lora_process()
 				   if(RXbuffer[0]==0x5a&&RXbuffer[1]==0xa5&&RXbuffer[4]==0x01)
 					 {
 						   switch(RXbuffer[5])
-							 {
-							 
+							 {						 
 								 //接入后台分配的设备号
 								  case  0x01 : 
 										//拿出设备号
@@ -503,7 +588,7 @@ uint8_t chuchang_lora_process()
 									         }
 //				                	EEPROM_WriteBytes(dev_num, 30,2);  //把设备号写进去     
 			    	              for(uint8_t i=0;i<G_LoRaConfig.PayloadLength;i++)
-				                 {
+				                  {
 					
 					                 RXbuffer[i]=0;
 					
@@ -785,7 +870,7 @@ uint8_t  factory_parameter_set()
 				               HAL_Delay(1000);  //延迟播放音乐
 										   HAL_Delay(1000);
 		              	key_state_value=0;
-			               	factory_num=3;		
+			                	factory_num=3;		
 			
 			 break;
 			     //用户密码按键输入
@@ -800,7 +885,7 @@ uint8_t  factory_parameter_set()
 							}
 							
 						          	HAL_Delay(1000);										
-							 	EEPROM_WriteBytes(user_password, 10,6);  //把用户密码写进去
+						//	 	EEPROM_WriteBytes(user_password, 10,6);  //把用户密码写进去
 							        	Line_1A_WT588S(3);//播放设定密码声音
 				               HAL_Delay(1000);
 										   HAL_Delay(1000);					
@@ -839,7 +924,7 @@ uint8_t  factory_parameter_set()
 			    set_txrx_datalen(pack_len);//数据包长度
             SX127X_TxPacket(TXbuffer);   				
 				          	 factory_num=7;		
-                 HAL_Delay(200);			
+               //  HAL_Delay(200);			
 				break;
     //接收数据lora数据解包
 			case 7:	
@@ -850,7 +935,7 @@ uint8_t  factory_parameter_set()
 										   factory_num=9;
 									}
 								
-	               HAL_Delay(200);
+	               //   HAL_Delay(200);
 				break;
 			
 				//发送入网成功，告知后台
@@ -863,7 +948,7 @@ uint8_t  factory_parameter_set()
 			  set_txrx_datalen(pack_len);//数据包长度
             SX127X_TxPacket(TXbuffer);   				
 				          	 factory_num=10;	
-                  HAL_Delay(200);			
+              //    HAL_Delay(200);			
           break;
 			case 10 :
 									 if(chuchang_lora_process()==2)
@@ -884,7 +969,7 @@ uint8_t  factory_parameter_set()
 				factory_parameter_flag=0x55;
 //				EEPROM_WriteBytes(&factory_parameter_flag, 1, 1); //完成出厂设置，设置参数区
                      factory_num=17;  //进入设备绑定状态 
-			          HAL_Delay(200);
+			      //    HAL_Delay(200);
 				 break;
 			//开机把用户密码发上去
 			case 13 :			  
@@ -894,7 +979,7 @@ uint8_t  factory_parameter_set()
 			  set_txrx_datalen(pack_len);//数据包长度
             SX127X_TxPacket(TXbuffer);   				
 				          	 factory_num=14;		
-	            HAL_Delay(200);
+	           // HAL_Delay(200);
 			//				     value=1;   //出厂设置化完成
 			 break;
 			case 14 :
@@ -902,7 +987,7 @@ uint8_t  factory_parameter_set()
 									{
 										   factory_num=15;
 									}
-									 HAL_Delay(200);
+								//	 HAL_Delay(200);
 			 break;
 				 //消防密码上报
 			case 15 : 
@@ -913,7 +998,7 @@ uint8_t  factory_parameter_set()
 			  set_txrx_datalen(pack_len);//数据包长度
             SX127X_TxPacket(TXbuffer);   				
 				          	 factory_num=16;		
-	                HAL_Delay(200);
+	               // HAL_Delay(200);
 				break; 
 			//消防密码回应
 		case 16 :
@@ -921,7 +1006,7 @@ uint8_t  factory_parameter_set()
 									{
 										   factory_num=12;
 									}
-									 HAL_Delay(200);
+								//	 HAL_Delay(200);
 			 break;
             				
 			

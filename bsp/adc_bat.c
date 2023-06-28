@@ -15,7 +15,8 @@ void adc_start()
 	HAL_ADC_Start_IT(&hadc);
 	
 	
-}
+}    
+//void HAL_RTCEx_WakeUpTimerEventCallback
 void HAL_RTCEx_WakeUpTimerEventCallback(RTC_HandleTypeDef *hrtc)
 {
 	//处于睡眠状态，由RTC唤醒的
